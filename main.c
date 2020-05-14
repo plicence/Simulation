@@ -38,14 +38,6 @@ typedef struct Echeancier
 
 echeancier Ech;
 
-double Exponentielle(int lbda){ //Méthode de la transofrmation inverse
-	double r = (double)random()/RAND_MAX;
-
-	while(r == 0 || r == 1){
-		r = (double)random()/RAND_MAX;
-	}
-	return -log(r)/(lbda*1.0);
-}
 
 int Fct_Repart() {
 
@@ -89,9 +81,14 @@ void Arrive_Conteneur(event e){
 
 void Decaler_Anneau() {
 
+	int precedent = anneau[K-1];
+	int courant = 0;
+	for(int i = 0; i < K; i ++) {
 
+		courant = anneau[i];
+		anneau[i] = precedent;
 
-
+	}
 
 }
 
@@ -102,14 +99,14 @@ void Traitement_Station(event e) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
 
-			anneau[150/K * i] = 0;
+			anneau[150/K * i] = -1;
 				n--;
 		}
 
 		if(N[i] > 0) {
 
-			if (delta[i] == 0 && anneau[150/K *i] == 0) {
-				anneau[150/K * i] = 150/K * i;
+			if (delta[i] == 0 && anneau[150/K *i] == -1) {
+				anneau[150/K * i] = ((150/K) * i);
 				//ajouter_point(Ta[i], n); //Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
 				Ta[i] = 0;
 				n++;
@@ -121,7 +118,7 @@ void Traitement_Station(event e) {
 				delta[i] --;
 				Ta[i] ++;
 
-				if (anneau[150/K * i]) {
+				if (anneau[150/K * i] >= 0) {
 					cpt[i]++ ;
 				}
 			}
@@ -221,7 +218,7 @@ void Initialisation(int i) {
 		Ta[i] = 0;
 	}
 	for(int j = 0; j < K; j++) {
-		anneau[j] = 0;
+		anneau[j] = -1;
 	}
 	event e1;
 	e1.n = Generer_duree();
