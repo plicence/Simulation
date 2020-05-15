@@ -5,6 +5,8 @@
 #include <time.h>
 #include <math.h>
 
+#include "gmp.h"
+
 #define Lambda 9
 #define Mu 10
 
@@ -38,6 +40,30 @@ typedef struct Echeancier
 
 echeancier Ech;
 
+mpf_t * Lecture_Fichier_Grand(){
+	FILE * f = fopen("Interarrivees.txt","r");
+	mpf_t * file = calloc(109, sizeof(mpf_t));
+	for(int i = 0; i < 109; i++){
+		mpf_init(file[i]);
+	}
+	if(f != NULL){
+		int cmp;
+		mpf_t proba; 
+		mpf_init(proba);
+		for(int i = 0; i < 109; i++){
+			gmp_fscanf(f,"%d %FE", &cmp, &proba);
+			//gmp_printf("cmp = %d", cmp);
+			//gmp_printf("proba = %Fe\n", proba);
+			mpf_set(file[cmp], proba);
+			//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
+		}
+		mpf_clear(proba);
+		fclose(f);
+		return file;
+	}
+	else return NULL;
+}
+
 long double * Lecture_Fichier(){
 	FILE * f = fopen("Interarrivees.txt","r");
 	long double * file = calloc(109 , sizeof(long double));
@@ -53,6 +79,34 @@ long double * Lecture_Fichier(){
 		return file;
 	}
 	else return NULL;
+}
+
+int Fct_Repart_mpz() {
+
+	mpf_t * proba = calloc(109, sizeof(mpf_t));
+	mpf_t * probaFichier = calloc(109, sizeof(mpf_t));
+	
+	for(int i = 0; i < 109; i++){
+		mpf_init(proba[i]);
+		mpf_init(probaFichier[i]);
+	}
+
+	probaFichier = Lecture_Fichier_Grand();
+	/*for(int i =0; i < 109; i++)
+		gmp_printf("probafile[%d] = %FE\n",i,probaFichier[i]);
+	*/
+	mpf_set(proba[0], probaFichier[0]);
+	for(int i = 1; i < 109;i++){
+		
+		mpf_add(proba[i], proba[i-1], probaFichier[i]);
+		gmp_printf("proba[%d] = %FE, probafile[%d] = %FE\n", i-1,proba[i-1],i,probaFichier[i]);	
+		gmp_printf("proba[%d] = %FE\n", i,proba[i]);
+		printf("----------------------------------------\n");
+	}
+	
+	mpf_clear(*proba);
+	mpf_clear(*probaFichier);
+	return 0;
 }
 
 int Fct_Repart() {
@@ -303,7 +357,7 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
-	Fct_Repart();
+	Fct_Repart_mpz();
 /*
 	int i = 0;
 	anneau = malloc(K * sizeof(int));
