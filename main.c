@@ -38,11 +38,35 @@ typedef struct Echeancier
 
 echeancier Ech;
 
+long double * Lecture_Fichier(){
+	FILE * f = fopen("Interarrivees.txt","r");
+	long double * file = calloc(109 , sizeof(long double));
+	if( f!= NULL){
+		int cmp;
+		long double proba; 
+		for(int i = 0; i < 109; i++){
+			fscanf(f,"%d %Le", &cmp, &proba);
+			file[cmp] = proba;
+			//printf("cmp = %d, proba = %Le\n", cmp, proba);
+		}
+		fclose(f);
+		return file;
+	}
+	else return NULL;
+}
 
 int Fct_Repart() {
 
-
-
+	long double * proba = calloc(Ech.taille, sizeof(long double));
+	long double * probaFichier = Lecture_Fichier();
+	
+	proba[0] = probaFichier[0];
+	for(int i = 1; i <= 108;i++){
+		proba[i] = proba[i-1] + probaFichier[i];
+		printf("proba[%d] = %Le, probafile[%d] = %Le\n", i-1,proba[i-1],i,probaFichier[i]);	
+		printf("proba[%d] = %Le\n", i,proba[i]);
+		printf("----------------------------------------\n");
+	}
 	return 0;
 }
 
@@ -279,6 +303,8 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
+	Fct_Repart();
+/*
 	int i = 0;
 	anneau = malloc(K * sizeof(int));
 	delta = malloc(i * sizeof(int));
@@ -288,5 +314,6 @@ int main(void) {
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	Simulation(f1, i);
 	fclose(f1);
+*/
 	return EXIT_SUCCESS;
 }
