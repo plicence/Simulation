@@ -126,7 +126,7 @@ int Fct_Repart_mpfr() {
 	
 	mpfr_set(proba[0], probaFichier[0], MPFR_RNDD);
 	for(int i = 1; i < 109;i++){
-		
+		printf("%d ", i);
 		mpfr_add(proba[i], proba[i-1], probaFichier[i], MPFR_RNDD);
 		mpfr_out_str(stdout, 10,0,proba[i], MPFR_RNDD);
 		printf("\n----------------------------------------\n");
