@@ -96,11 +96,10 @@ mpfr_t * Lecture_Fichier_Grandm(){
 		for(int i = 0; i < 109; i++){
 			mpfr_inp_str(cmp, f, 10,MPFR_RNDD);
 			mpfr_inp_str(proba, f, 10,MPFR_RNDD);
-				mpfr_set(file[i], proba, MPFR_RNDD);
-				//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
-				mpfr_out_str(stdout, 10,0,file[i], MPFR_RNDD);
-				printf("\n");
-		
+			mpfr_set(file[i], proba, MPFR_RNDD);
+			//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
+			mpfr_out_str(stdout, 10,0,file[i], MPFR_RNDD);
+			printf("\n");
 		}
 		mpfr_clear(proba);
 		fclose(f);
@@ -115,23 +114,24 @@ int Fct_Repart_mpfr() {
 	mpfr_t * probaFichier = calloc(109, sizeof(mpfr_t));
 	
 	for(int i = 0; i < 109; i++){
-		mpfr_init2(proba[i],1000);
+		mpfr_init2(proba[i],100);
 		mpfr_init2(probaFichier[i],1000);
 	}
 
 	probaFichier = Lecture_Fichier_Grandm();
-	/*for(int i =0; i < 109; i++)
-		gmp_printf("probafile[%d] = %FE\n",i,probaFichier[i]);
+	/*for(int i =0; i < 109; i++){
+		mpfr_out_str(stdout, 10,0,probaFichier[i], MPFR_RNDD);
+		printf("\n");
+	}*/
 	
 	mpfr_set(proba[0], probaFichier[0], MPFR_RNDD);
 	for(int i = 1; i < 109;i++){
 		
 		mpfr_add(proba[i], proba[i-1], probaFichier[i], MPFR_RNDD);
-		mpfr_out_str("proba[%d] = %50FE, probafile[%d] = %50FE\n", i-1,proba[i-1],i,probaFichier[i],MPFR_RNDD);	
-		mpfr_out_str("proba[%d] = %50FE\n", i,proba[i], MPFR_RNDD);
-		printf("----------------------------------------\n");
+		mpfr_out_str(stdout, 10,0,proba[i], MPFR_RNDD);
+		printf("\n----------------------------------------\n");
 	}
-	*/
+	
 	mpfr_clear(*proba);
 	mpfr_clear(*probaFichier);
 	mpfr_free_cache();
