@@ -89,17 +89,18 @@ mpfr_t * Lecture_Fichier_Grandm(){
 		mpfr_init2(file[i],100);
 	}
 	if(f != NULL){
-		int cmp;
+		mpfr_t cmp;
 		mpfr_t proba; 
+		mpfr_init2(cmp,1);
 		mpfr_init2(proba,100000);
 		for(int i = 0; i < 109; i++){
+			mpfr_inp_str(cmp, f, 10,MPFR_RNDD);
 			mpfr_inp_str(proba, f, 10,MPFR_RNDD);
-			if(i%2 == 1){
 				mpfr_set(file[i], proba, MPFR_RNDD);
 				//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
 				mpfr_out_str(stdout, 10,0,file[i], MPFR_RNDD);
 				printf("\n");
-			}
+		
 		}
 		mpfr_clear(proba);
 		fclose(f);
@@ -114,8 +115,8 @@ int Fct_Repart_mpfr() {
 	mpfr_t * probaFichier = calloc(109, sizeof(mpfr_t));
 	
 	for(int i = 0; i < 109; i++){
-		mpfr_init2(proba[i],1);
-		mpfr_init2(probaFichier[i],1);
+		mpfr_init2(proba[i],1000);
+		mpfr_init2(probaFichier[i],1000);
 	}
 
 	probaFichier = Lecture_Fichier_Grandm();
