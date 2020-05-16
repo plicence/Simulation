@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "gmp.h"
+#include <mpfr.h>
 
 #define Lambda 9
 #define Mu 10
@@ -51,7 +52,7 @@ mpf_t * Lecture_Fichier_Grand(){
 		mpf_t proba; 
 		mpf_init(proba);
 		for(int i = 0; i < 109; i++){
-			gmp_fscanf(f,"%d %FE", &cmp, &proba);
+			gmp_fscanf(f,"%d %.50FE", &cmp, &proba);
 			//gmp_printf("cmp = %d", cmp);
 			//gmp_printf("proba = %Fe\n", proba);
 			mpf_set(file[cmp], proba);
@@ -81,6 +82,61 @@ long double * Lecture_Fichier(){
 	else return NULL;
 }
 
+mpfr_t * Lecture_Fichier_Grandm(){
+	FILE * f = fopen("Interarrivees.txt","r");
+	mpfr_t * file = calloc(109, sizeof(mpfr_t));
+	for(int i = 0; i < 109; i++){
+		mpfr_init2(file[i],100);
+	}
+	if(f != NULL){
+		int cmp;
+		mpfr_t proba; 
+		mpfr_init2(proba,100000);
+		for(int i = 0; i < 109; i++){
+			mpfr_inp_str(proba, f, 10,MPFR_RNDD);
+			if(i%2 == 1){
+				mpfr_set(file[i], proba, MPFR_RNDD);
+				//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
+				mpfr_out_str(stdout, 10,0,file[i], MPFR_RNDD);
+				printf("\n");
+			}
+		}
+		mpfr_clear(proba);
+		fclose(f);
+		return file;
+	}
+	else return NULL;
+}
+
+int Fct_Repart_mpfr() {
+
+	mpfr_t * proba = calloc(109, sizeof(mpfr_t));
+	mpfr_t * probaFichier = calloc(109, sizeof(mpfr_t));
+	
+	for(int i = 0; i < 109; i++){
+		mpfr_init2(proba[i],1);
+		mpfr_init2(probaFichier[i],1);
+	}
+
+	probaFichier = Lecture_Fichier_Grandm();
+	/*for(int i =0; i < 109; i++)
+		gmp_printf("probafile[%d] = %FE\n",i,probaFichier[i]);
+	
+	mpfr_set(proba[0], probaFichier[0], MPFR_RNDD);
+	for(int i = 1; i < 109;i++){
+		
+		mpfr_add(proba[i], proba[i-1], probaFichier[i], MPFR_RNDD);
+		mpfr_out_str("proba[%d] = %50FE, probafile[%d] = %50FE\n", i-1,proba[i-1],i,probaFichier[i],MPFR_RNDD);	
+		mpfr_out_str("proba[%d] = %50FE\n", i,proba[i], MPFR_RNDD);
+		printf("----------------------------------------\n");
+	}
+	*/
+	mpfr_clear(*proba);
+	mpfr_clear(*probaFichier);
+	mpfr_free_cache();
+	return 0;
+}
+
 int Fct_Repart_mpz() {
 
 	mpf_t * proba = calloc(109, sizeof(mpf_t));
@@ -99,8 +155,8 @@ int Fct_Repart_mpz() {
 	for(int i = 1; i < 109;i++){
 		
 		mpf_add(proba[i], proba[i-1], probaFichier[i]);
-		gmp_printf("proba[%d] = %FE, probafile[%d] = %FE\n", i-1,proba[i-1],i,probaFichier[i]);	
-		gmp_printf("proba[%d] = %FE\n", i,proba[i]);
+		gmp_printf("proba[%d] = %.50FE, probafile[%d] = %.50FE\n", i-1,proba[i-1],i,probaFichier[i]);	
+		gmp_printf("proba[%d] = %.50FE\n", i,proba[i]);
 		printf("----------------------------------------\n");
 	}
 	
@@ -117,8 +173,8 @@ int Fct_Repart() {
 	proba[0] = probaFichier[0];
 	for(int i = 1; i <= 108;i++){
 		proba[i] = proba[i-1] + probaFichier[i];
-		printf("proba[%d] = %Le, probafile[%d] = %Le\n", i-1,proba[i-1],i,probaFichier[i]);	
-		printf("proba[%d] = %Le\n", i,proba[i]);
+		printf("proba[%d] = %.50Le, probafile[%d] = %.50Le\n", i-1,proba[i-1],i,probaFichier[i]);	
+		printf("proba[%d] = %.50Le\n", i,proba[i]);
 		printf("----------------------------------------\n");
 	}
 	return 0;
@@ -357,7 +413,7 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
-	Fct_Repart_mpz();
+	Fct_Repart_mpfr();
 /*
 	int i = 0;
 	anneau = malloc(K * sizeof(int));
