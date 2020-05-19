@@ -14,7 +14,7 @@
 
 #define EPSILON 1e-5
 #define MAXEVENT 1000000
-#define MAXTEMPS 100000
+#define MAXTEMPS 10000
 
 double temps = 0;
 //long int n = 0; //Etats du systeme
@@ -251,14 +251,8 @@ void Decaler_Anneau() {
 
 }
 
-void ajouter_point(FILE * F1,int Ta, int Nc){
-	
-}
-
 void Traitement_Station(event e) {
 
-	FILE * F1;
-	FILE * F10;
 	//printf("Traitement\n");
 	for(int i = 0; i < K; i++) {
 
@@ -270,13 +264,6 @@ void Traitement_Station(event e) {
 			
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
-				if(i == 1 || i == 10){
-					if(i == 1){
-						ajouter_point(F1, Ta[i], Nc);
-					} else if (i == 10){
-						ajouter_point(F10, Ta[i], Nc);
-					}//Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
-				}
 				Ta[i] = 0;
 				Nc++;
 				N[i]--;
@@ -298,11 +285,12 @@ void Traitement_Station(event e) {
 		}
 
 	}
-	for (int i = 0; i < 150; i++)
+	/*for (int i = 0; i < 150; i++)
 	{
 		printf("anneau[%d] = %d ", i, anneau[i]);
 	}
-	printf("-----------------------------------------\n");
+	printf("-----------------------------------------\n");*/
+
 	e.etat = 1;
 	event e1;
 	e1.n = temps + 1;
@@ -404,9 +392,11 @@ void Initialisation(int i) {
 	Ajouter_Evenement(e3);
 }
 
+void ajouter_point(FILE * F1,int Ta){
+	fprintf(F1,"%d  %f \n", Ta, temps); 
+}
 
-
-void Simulation(FILE* f1, int i){
+void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 	long double OldNmoyen;
 	long double Nmoyen;
 
@@ -428,6 +418,12 @@ void Simulation(FILE* f1, int i){
 			fprintf(f1, "%f  %d \n", temps, Nc);
 			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
+		fprintf(F1,"%d  %f \n", Ta[1], temps); 
+		fprintf(F10,"%d  %f \n", Ta[10], temps); 
+
+		//ajouter_point(F1, Ta[1]);
+		//ajouter_point(F10, Ta[10]);//Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
+	
 
 		if(e.type == 0){
 			Arrive_Conteneur(e);printf("Arrive\n");}
@@ -454,7 +450,9 @@ int main(void) {
 	cpt = calloc(K, sizeof(int));
 	Ta = calloc(K, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
-	Simulation(f1, i);
+	FILE * F1  = fopen("STATION1.data","w");
+	FILE * F10 = fopen("STATION10.data","w");
+	Simulation(f1, F1, F10, i);
 	//printf("Ech.taille = %d\n", Ech.taille);
 	for (i = 0; i < K; i++)
 	{
@@ -462,6 +460,8 @@ int main(void) {
 		printf("N[%d] = %d\n", i, N[i]);
 	}
 	fclose(f1);
+	fclose(F1);
+	fclose(F10);
 	
 	free(anneau);
 	free(delta);
