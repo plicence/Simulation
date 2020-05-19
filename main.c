@@ -20,7 +20,7 @@ double temps = 0;
 long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 0;
+int K = 20;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -248,11 +248,9 @@ void Traitement_Station(event e) {
 	for(int i = 0; i < K; i++) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
-
 			anneau[150/K * i] = -1;
 				n--;
 		}
-
 		if(N[i] > 0) {
 
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
@@ -261,9 +259,7 @@ void Traitement_Station(event e) {
 				Ta[i] = 0;
 				n++;
 				delta[i] = 10;
-
 			}
-
 			else {
 				delta[i] --;
 				Ta[i] ++;
@@ -272,14 +268,10 @@ void Traitement_Station(event e) {
 					cpt[i]++ ;
 				}
 			}
-
-
 		}
-
-
 		else {
 
-			Ta[i] ++;
+			Ta[i]++;
 		}
 
 	}
@@ -363,9 +355,9 @@ void Initialisation(int i) {
 
 	for(int j = 0; j < i; j++) {
 		delta[j] = 0;
-		N[i] = 0;
-		cpt[i] = 0;
-		Ta[i] = 0;
+		N[j] = 0;
+		cpt[j] = 0;
+		Ta[j] = 0;
 	}
 	for(int j = 0; j < K; j++) {
 		anneau[j] = -1;
@@ -398,7 +390,7 @@ void Simulation(FILE* f1, int i){
 	Initialisation(i);
 	event e;
 
-	while(Condition_Arret(OldNmoyen, Nmoyen) == 0){ //(temps<MAXTEMPS)
+	while(temps<MAXTEMPS){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
 		cumule += (e.n - temps) * n;
 		OldNmoyen = Nmoyen;
@@ -428,9 +420,8 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
-//	Generer_duree();
     srand(time(NULL) + getpid());
-	int i = 0;
+	int i = 150;
 	anneau = malloc(K * sizeof(int));
 	delta = malloc(i * sizeof(int));
 	N = malloc(i * sizeof(int));
@@ -439,6 +430,11 @@ int main(void) {
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	Simulation(f1, i);
 	fclose(f1);
-
+	
+	free(anneau);
+	free(delta);
+	free(N);
+	free(cpt);
+	free(Ta);
 	return EXIT_SUCCESS;
 }
