@@ -13,11 +13,11 @@
 #define Mu 10
 
 #define EPSILON 1e-5
-#define MAXEVENT 100000
-#define MAXTEMPS 5000
+#define MAXEVENT 1000000
+#define MAXTEMPS 100000
 
 double temps = 0;
-long int n = 0; //Etats du systeme
+//long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
 int K = 20;
@@ -42,7 +42,7 @@ typedef struct Echeancier
 
 echeancier Ech;
 
-mpf_t * Lecture_Fichier_Grand(){
+/*mpf_t * Lecture_Fichier_Grand(){
 	FILE * f = fopen("Interarrivees.txt","r");
 	mpf_t * file = calloc(109, sizeof(mpf_t));
 	for(int i = 0; i < 109; i++){
@@ -64,7 +64,7 @@ mpf_t * Lecture_Fichier_Grand(){
 		return file;
 	}
 	else return NULL;
-}
+}*/
 
 long double * Lecture_Fichier(){
 	FILE * f = fopen("Interarrivees.txt","r");
@@ -83,7 +83,7 @@ long double * Lecture_Fichier(){
 	else return NULL;
 }
 
-mpfr_t * Lecture_Fichier_Grandm(){
+/*mpfr_t * Lecture_Fichier_Grandm(){
 	FILE * f = fopen("Interarrivees.txt","r");
 	mpfr_t * file = calloc(109, sizeof(mpfr_t));
 	for(int i = 0; i < 109; i++){
@@ -120,10 +120,10 @@ int Fct_Repart_mpfr() {
 	}
 
 	probaFichier = Lecture_Fichier_Grandm();
-	/*for(int i =0; i < 109; i++){
+	for(int i =0; i < 109; i++){
 		mpfr_out_str(stdout, 10,0,probaFichier[i], MPFR_RNDD);
 		printf("\n");
-	}*/
+	}
 	
 	mpfr_set(proba[0], probaFichier[0], MPFR_RNDD);
 	for(int i = 1; i < 109;i++){
@@ -150,9 +150,9 @@ int Fct_Repart_mpz() {
 	}
 
 	probaFichier = Lecture_Fichier_Grand();
-	/*for(int i =0; i < 109; i++)
+	for(int i =0; i < 109; i++)
 		gmp_printf("probafile[%d] = %FE\n",i,probaFichier[i]);
-	*/
+	
 	mpf_set(proba[0], probaFichier[0]);
 	for(int i = 1; i < 109;i++){
 		
@@ -166,7 +166,7 @@ int Fct_Repart_mpz() {
 	mpf_clear(*probaFichier);
 	return 0;
 }
-
+*/
 long double * Fct_Repart() {
 
 	long double * proba = calloc(109, sizeof(long double));
@@ -179,6 +179,7 @@ long double * Fct_Repart() {
 		printf("proba[%d] = %.50Le\n", i,proba[i]);
 		printf("----------------------------------------\n");*/
 	}
+	free(probaFichier);
 	return proba;
 }
 
@@ -187,15 +188,22 @@ long double Generer_duree() {
 	int i = 0;
 	long double nbr_alea = 0;
 	nbr_alea = (long double)rand() / (long double)RAND_MAX;
-	printf("nbr_alea = %Le\n", nbr_alea);
-	long double * proba = calloc(109, sizeof(long double));
+	//printf("nbr_alea = %Le\n", nbr_alea);
+	long double * proba;
 	
 	proba = Fct_Repart(); 
+	/*for(int i = 1; i <= 108;i++){
+		printf("proba[%d] = %.50Le\n", i,proba[i]);
+		printf("----------------------------------------\n");
+	}*/
 	
 	while(proba[i] < nbr_alea){
+		//printf("proba[%d] = %.Le < %Le\n", i,proba[i], nbr_alea);
 		i++;
 	}
-	printf("proba[%d] = %.Le\n", i-1,proba[i-1]);
+	//printf("proba[%d] = %.Le\n", i-1,proba[i-1]);
+	
+	free(proba);
 	return i-1;
 }
 
@@ -218,6 +226,7 @@ void Arrive_Conteneur(event e){
 	for(int i = 0; i < K; i++){
 		N[i] ++;
 	}
+	//printf("FIle = %d\n",N[1]); 
 
 	e.etat = 1;
 	event e1;
@@ -231,37 +240,51 @@ void Arrive_Conteneur(event e){
 
 void Decaler_Anneau() {
 
-	int precedent = anneau[K-1];
+	int precedent = anneau[149];
 	int courant = 0;
-	for(int i = 0; i < K; i ++) {
+	for(int i = 0; i < 150; i ++) {
 
 		courant = anneau[i];
 		anneau[i] = precedent;
-
+		precedent = courant;
 	}
 
 }
 
+void ajouter_point(FILE * F1,int Ta, int Nc){
+	
+}
+
 void Traitement_Station(event e) {
 
-	printf("Traitement\n");
+	FILE * F1;
+	FILE * F10;
+	//printf("Traitement\n");
 	for(int i = 0; i < K; i++) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
 			anneau[150/K * i] = -1;
-				n--;
+				Nc--;
 		}
 		if(N[i] > 0) {
-
+			
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
-				//ajouter_point(Ta[i], n); //Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
+				if(i == 1 || i == 10){
+					if(i == 1){
+						ajouter_point(F1, Ta[i], Nc);
+					} else if (i == 10){
+						ajouter_point(F10, Ta[i], Nc);
+					}//Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
+				}
 				Ta[i] = 0;
-				n++;
+				Nc++;
+				N[i]--;
 				delta[i] = 10;
 			}
 			else {
-				delta[i] --;
+				if(delta[i] > 0)
+					delta[i] --;
 				Ta[i] ++;
 
 				if (anneau[150/K * i] >= 0) {
@@ -275,6 +298,11 @@ void Traitement_Station(event e) {
 		}
 
 	}
+	for (int i = 0; i < 150; i++)
+	{
+		printf("anneau[%d] = %d ", i, anneau[i]);
+	}
+	printf("-----------------------------------------\n");
 	e.etat = 1;
 	event e1;
 	e1.n = temps + 1;
@@ -285,7 +313,7 @@ void Traitement_Station(event e) {
 
 void Decalage_Anneau(event e) {
 
-	printf("Rotation\n");
+	//printf("Rotation\n");
 	Decaler_Anneau();
 	e.etat = 1;
 	event e1;
@@ -302,7 +330,7 @@ void Decalage_Anneau(event e) {
 void affiche_echeancier(){
 	event e;
 
-	printf("--> temps %f et N = %ld taille : %d [",temps,n,Ech.taille);
+	printf("--> temps %f et N = %d taille : %d [",temps,Nc,Ech.taille);
 	for (int i = 0; i < Ech.taille; i++)
 	{
 		e = Ech.Tab[i];
@@ -353,9 +381,12 @@ int Condition_Arret(long double Old, long double New){
 
 void Initialisation(int i) {
 
-	for(int j = 0; j < K; j++) {
+	for(int j = 0; j < 150; j++) {
 		anneau[j] = -1;
 	}
+	
+	Ech.taille = 0;
+	
 	event e1;
 	e1.n = Generer_duree();
 	e1.type = 0;
@@ -371,8 +402,6 @@ void Initialisation(int i) {
 	e3.type = 2;
 	e3.etat = 0;
 	Ajouter_Evenement(e3);
-
-
 }
 
 
@@ -384,27 +413,28 @@ void Simulation(FILE* f1, int i){
 	Initialisation(i);
 	event e;
 
-	while(temps<MAXTEMPS){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while(temps < MAXTEMPS){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
-		cumule += (e.n - temps) * n;
+		cumule += (e.n - temps) * Nc;
 		OldNmoyen = Nmoyen;
 
 		if (temps == 0)
 		{
-			printf("temps = 0 et N = 0 et Nmoyen = 0\n");
-			fprintf(f1, "0    0\n");
+			//printf("temps = 0 et N = 0 et Nmoyen = 0\n");
+			fprintf(f1, " 0   0\n");
 		}else {
 			Nmoyen = cumule/temps;
-			printf("temps = %f et N = %ld et Nmoyen = %Lf\n", temps, n, Nmoyen);
-			fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
+			printf("temps = %f  N = %d \n", temps, Nc);
+			fprintf(f1, "%f  %d \n", temps, Nc);
+			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
 
-		if(e.type == 0)
-			Arrive_Conteneur(e);
-		else if(e.type == 1)
-			Traitement_Station(e);
-		else
-			Decalage_Anneau(e);
+		if(e.type == 0){
+			Arrive_Conteneur(e);printf("Arrive\n");}
+		else if(e.type == 1){
+			Traitement_Station(e);printf("Traitement\n");}
+		else{
+			Decalage_Anneau(e);printf("Decalage\n");}
 
 	}
 
@@ -414,15 +444,23 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
+
     srand(time(NULL) + getpid());
 	int i = 150;
-	anneau = malloc(K * sizeof(int));
-	delta =calloc(i, sizeof(int)); //malloc(i * sizeof(int));
-	N = calloc(i, sizeof(int));
-	cpt = calloc(i, sizeof(int));
-	Ta = calloc(i, sizeof(int));
+	anneau = malloc(i * sizeof(int));
+	
+	delta =calloc(K, sizeof(int)); //malloc(i * sizeof(int));
+	N = calloc(K, sizeof(int));
+	cpt = calloc(K, sizeof(int));
+	Ta = calloc(K, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	Simulation(f1, i);
+	//printf("Ech.taille = %d\n", Ech.taille);
+	for (i = 0; i < K; i++)
+	{
+		printf("delta[%d] = %d ", i, delta[i]);
+		printf("N[%d] = %d\n", i, N[i]);
+	}
 	fclose(f1);
 	
 	free(anneau);
@@ -430,5 +468,18 @@ int main(void) {
 	free(N);
 	free(cpt);
 	free(Ta);
+
+/*	
+	for (i = 0; i < 150; i++)
+	{
+		anneau[i] = i;
+		printf("anneau[%d] = %d\n", i, anneau[i]);
+	}
+	Decaler_Anneau();
+	for (i = 0; i < 150; i++){
+		printf("anneau[%d] = %d\n", i, anneau[i]);
+	}
+    
+  */  
 	return EXIT_SUCCESS;
 }
