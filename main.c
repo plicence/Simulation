@@ -353,12 +353,6 @@ int Condition_Arret(long double Old, long double New){
 
 void Initialisation(int i) {
 
-	for(int j = 0; j < i; j++) {
-		delta[j] = 0;
-		N[j] = 0;
-		cpt[j] = 0;
-		Ta[j] = 0;
-	}
 	for(int j = 0; j < K; j++) {
 		anneau[j] = -1;
 	}
@@ -423,10 +417,10 @@ int main(void) {
     srand(time(NULL) + getpid());
 	int i = 150;
 	anneau = malloc(K * sizeof(int));
-	delta = malloc(i * sizeof(int));
-	N = malloc(i * sizeof(int));
-	cpt = malloc(i * sizeof(int));
-	Ta = malloc(i * sizeof(int));
+	delta =calloc(i, sizeof(int)); //malloc(i * sizeof(int));
+	N = calloc(i, sizeof(int));
+	cpt = calloc(i, sizeof(int));
+	Ta = calloc(i, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	Simulation(f1, i);
 	fclose(f1);
