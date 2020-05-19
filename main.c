@@ -5,6 +5,7 @@
 #include <time.h>
 #include <math.h>
 
+
 #include "gmp.h"
 #include <mpfr.h>
 
@@ -166,23 +167,36 @@ int Fct_Repart_mpz() {
 	return 0;
 }
 
-int Fct_Repart() {
+long double * Fct_Repart() {
 
-	long double * proba = calloc(Ech.taille, sizeof(long double));
+	long double * proba = calloc(109, sizeof(long double));
 	long double * probaFichier = Lecture_Fichier();
 	
 	proba[0] = probaFichier[0];
 	for(int i = 1; i <= 108;i++){
 		proba[i] = proba[i-1] + probaFichier[i];
-		printf("proba[%d] = %.50Le, probafile[%d] = %.50Le\n", i-1,proba[i-1],i,probaFichier[i]);	
+		/*printf("proba[%d] = %.50Le, probafile[%d] = %.50Le\n", i-1,proba[i-1],i,probaFichier[i]);	
 		printf("proba[%d] = %.50Le\n", i,proba[i]);
-		printf("----------------------------------------\n");
+		printf("----------------------------------------\n");*/
 	}
-	return 0;
+	return proba;
 }
 
-int Generer_duree() {
-	return 0;
+long double Generer_duree() {
+	
+	int i = 0;
+	long double nbr_alea = 0;
+	nbr_alea = (long double)rand() / (long double)RAND_MAX;
+	printf("nbr_alea = %Le\n", nbr_alea);
+	long double * proba = calloc(109, sizeof(long double));
+	
+	proba = Fct_Repart(); 
+	
+	while(proba[i] < nbr_alea){
+		i++;
+	}
+	printf("proba[%d] = %.Le\n", i-1,proba[i-1]);
+	return i-1;
 }
 
 void Ajouter_Evenement(event e){
@@ -414,8 +428,8 @@ void Simulation(FILE* f1, int i){
 
 int main(void) {
 
-	Fct_Repart_mpfr();
-/*
+//	Generer_duree();
+    srand(time(NULL) + getpid());
 	int i = 0;
 	anneau = malloc(K * sizeof(int));
 	delta = malloc(i * sizeof(int));
@@ -425,6 +439,6 @@ int main(void) {
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	Simulation(f1, i);
 	fclose(f1);
-*/
+
 	return EXIT_SUCCESS;
 }
