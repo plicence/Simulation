@@ -16,8 +16,10 @@
 #define MAXEVENT 1000000
 #define MAXTEMPS 100000
 
-int Haut = EPSILON;
-int Bas = -EPSILON;
+int Haut1 = EPSILON;
+int Bas1 = -EPSILON;
+int Haut2 = EPSILON;
+int Bas2 = -EPSILON;
 double temps = 0;
 //long int n = 0; //Etats du systeme
 int compteur = 0;
@@ -257,29 +259,47 @@ void Decaler_Anneau() {
 
 }
 
-int Condition_Arret(long double Old, long double New){
-	if((ancien[0]-nouveau[0]) < Bas && (ancien[0]-nouveau[0]) > Haut ){
-		Bas = (ancien[0]-nouveau[0]) - EPSILON/2;
-		Haut = (ancien[0]-nouveau[0]) + EPSILON/2;
+void Condition_Arret(long double Old, long double New){
+	int res;
+	printf("acien:%d, nouveau:%d",ancien[0],nouveau[0]);
+	if((nouveau[0] -ancien[0]) < Bas1 || (nouveau[0] -ancien[0]) > Haut1 ){
+
+		Bas1 = -fabs(nouveau[0] -ancien[0]) - (EPSILON/2);
+		Haut1 = fabs((nouveau[0] -ancien[0])) + (EPSILON/2);
 		iteration[0] = 0;
-		return 0;
+		printf("haut:%d, bas:%d",Haut1,Bas1);
+
 	}
 
 	else {
 
 		iteration[0]++;
-		if(iteration[0] > 1000) {
-
-			return 1;
-
-		}
 
 
 
 	}
 
+/*	if((ancien[1]-nouveau[1]) < Bas2 || (ancien[1]-nouveau[1]) > Haut2 ){
+			Bas2 = (ancien[1]-nouveau[1]) - EPSILON/2;
+			Haut2 = (ancien[1]-nouveau[1]) + EPSILON/2;
+			iteration[1] = 0;
+			res += 0;
+		}
 
-return 0;
+		else {
+
+			iteration[1]++;
+			if(iteration[1] > 10) {
+
+				res += 1;
+
+			}
+
+
+
+		}
+if (res == 2) return 1;
+*/
 
 }
 
@@ -302,7 +322,7 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 					ancien[0] = nouveau[0]; 
 					nouveau[0] = Ta[1];
 					fprintf(F1,"%d  %f \n", Ta[1], temps); 
-					arret =Condition_Arret(0,0); 
+					Condition_Arret(0,0);
 				}
 				if(i == 10) {
 					ancien[1] = nouveau[1]; 
@@ -441,13 +461,11 @@ void ajouter_point(FILE * F1,int Ta){
 void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 	long double OldNmoyen;
 	long double Nmoyen;
-
 	Initialisation(i);
 	event e;
 	int arret =0;
-	while(arret == 0){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while(iteration[0] < 1000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
-		cumule += (e.n - temps) * Nc;
 		OldNmoyen = Nmoyen;
 
 		if (temps == 0)
@@ -470,7 +488,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 		if(e.type == 0){
 			Arrive_Conteneur(e);printf("Arrive\n");}
 		else if(e.type == 1){
-			arret = Traitement_Station(e, F1, F10);printf("Traitement\n");}
+			Traitement_Station(e, F1, F10);printf("Traitement\n");}
 		else{
 			Decalage_Anneau(e);printf("Decalage\n");}
 
@@ -514,6 +532,7 @@ int main(void) {
 	free(cpt);
 	free(Ta);
 
+	printf("haut:%d, bas:%d",Haut1,Bas1);
 /*	
 	for (i = 0; i < 150; i++)
 	{
