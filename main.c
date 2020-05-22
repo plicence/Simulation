@@ -258,21 +258,29 @@ void Decaler_Anneau() {
 }
 
 int Condition_Arret(long double Old, long double New){
-	if(fabs(ancien[0]-nouveau[0]) < 15 && temps > 1000 && different <= 10){
-		printf("ancien:%d, nouveau:%d\n",ancien[0],nouveau[0]);
-		iteration[0]++;
-		if(iteration[0] > 100)
-			return 1;
+	if(ancien[0]-nouveau[0] < Bas && ancien[0]-nouveau[0] > Haut ){
+		Bas = (ancien[0]-nouveau[0]) - EPSILON/2;
+		Haut = (ancien[0]-nouveau[0]) + EPSILON/2;
+		iteration[0] = 0;
+		return 0;
 	}
+
 	else {
-		different++;
-		if(different > 10) {
-			different = 0;
-			iteration[0] = 0;
+
+		iteration[0]++;
+		if(iteration[0] > 1000) {
+
+			return 1;
+
 		}
 
+
+
 	}
-	return 0;
+
+
+return 0;
+
 }
 
 
