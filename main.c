@@ -24,7 +24,7 @@ double temps = 0;
 //long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 22;
+int K = 100;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -259,7 +259,7 @@ void Decaler_Anneau() {
 
 }
 
-void Condition_Arret(long double Old, long double New){
+void Condition_Arret(){
 	int res;
 	printf("acien:%d, nouveau:%d",ancien[0],nouveau[0]);
 	if((nouveau[0] -ancien[0]) < Bas1 || (nouveau[0] -ancien[0]) > Haut1 ){
@@ -279,27 +279,24 @@ void Condition_Arret(long double Old, long double New){
 
 	}
 
-/*	if((ancien[1]-nouveau[1]) < Bas2 || (ancien[1]-nouveau[1]) > Haut2 ){
-			Bas2 = (ancien[1]-nouveau[1]) - EPSILON/2;
-			Haut2 = (ancien[1]-nouveau[1]) + EPSILON/2;
+	if((nouveau[1] -ancien[1]) < Bas2 || (nouveau[1] -ancien[1]) > Haut2 ){
+
+			Bas2 = -fabs(nouveau[1] -ancien[1]) - (EPSILON/2);
+			Haut2 = fabs((nouveau[1] -ancien[1])) + (EPSILON/2);
 			iteration[1] = 0;
-			res += 0;
-		}
+			printf("haut:%d, bas:%d",Haut2,Bas2);
 
-		else {
+	}
 
-			iteration[1]++;
-			if(iteration[1] > 10) {
+	else {
 
-				res += 1;
-
-			}
+		iteration[1]++;
 
 
 
-		}
-if (res == 2) return 1;
-*/
+	}
+
+
 
 }
 
@@ -322,12 +319,13 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 					ancien[0] = nouveau[0]; 
 					nouveau[0] = Ta[1];
 					fprintf(F1,"%d  %f \n", Ta[1], temps); 
-					Condition_Arret(0,0);
+					Condition_Arret();
 				}
 				if(i == 10) {
 					ancien[1] = nouveau[1]; 
 					nouveau[1] = Ta[10];
 					fprintf(F10,"%d  %f \n", Ta[10], temps); 
+					Condition_Arret();
 					}
 
 				Ta[i] = 0;
@@ -464,7 +462,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 	Initialisation(i);
 	event e;
 	int arret =0;
-	while(iteration[0] < 1000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while(iteration[0] < 3000 && iteration[1] < 3000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
 		OldNmoyen = Nmoyen;
 
