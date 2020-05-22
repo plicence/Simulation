@@ -304,10 +304,10 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 					fprintf(F1,"%d  %f \n", Ta[1], temps); 
 					arret =Condition_Arret(0,0); 
 				}
-				else if(i == 10) {
+				if(i == 10) {
 					ancien[1] = nouveau[1]; 
 					nouveau[1] = Ta[10];
-					fprintf(F10,"%d  %f \n", Ta[1], temps); 
+					fprintf(F10,"%d  %f \n", Ta[10], temps); 
 					}
 
 				Ta[i] = 0;

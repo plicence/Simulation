@@ -1,4 +1,4 @@
-modelname = "Simulation_MM2.data"
+modelname = "STATION1.data"
 data = read.table(modelname)
 attach(data)
 
@@ -6,5 +6,5 @@ attach(data)
 x =V1
 f1=V2
 
-plot (x, f1, type ="l", xlab="x",ylab ="Fx(x)", col ="red", main = "Relief du graphe")
+plot (f1, x, type ="o", xlab="x",ylab ="Fx(x)", col ="red", main = "Relief du graphe")
 legend("topleft", legend = c("Théorique","Expérimental"), col =c("red"), lty =1:1, cex =0.8) 
