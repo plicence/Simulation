@@ -258,7 +258,7 @@ void Decaler_Anneau() {
 }
 
 int Condition_Arret(long double Old, long double New){
-	if(ancien[0]-nouveau[0] < Bas && ancien[0]-nouveau[0] > Haut ){
+	if((ancien[0]-nouveau[0]) < Bas && (ancien[0]-nouveau[0]) > Haut ){
 		Bas = (ancien[0]-nouveau[0]) - EPSILON/2;
 		Haut = (ancien[0]-nouveau[0]) + EPSILON/2;
 		iteration[0] = 0;
