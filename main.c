@@ -14,7 +14,7 @@
 
 #define EPSILON 1e-5
 #define MAXEVENT 1000000
-#define MAXTEMPS 10000
+#define MAXTEMPS 100000
 
 double temps = 0;
 //long int n = 0; //Etats du systeme
@@ -27,6 +27,10 @@ int * delta;
 int * N;
 int * cpt;
 int * Ta;
+int *ancien;//tableau enregistrant les temps d'attente ancien et nouveau
+int *nouveau;
+int *iteration;//compteur pour indiquer le nombre de valeurs de suite vérifiant la condtion d'arrêt
+int different =0;//nombre de valeurs ne respectant pas les conditions
 
 typedef struct Event{
 	int type; // 0 pour arrivée_client, 1 pour Traitement_Station, 2 pour décalage_anneau
@@ -251,9 +255,26 @@ void Decaler_Anneau() {
 
 }
 
-void Traitement_Station(event e) {
+int Condition_Arret(long double Old, long double New){
+	if(fabs(ancien[0]-nouveau[0]) < 10 && temps > 1000 && different <= 10){
+		printf("ancien:%d, nouveau:%d\n",ancien[0],nouveau[0]);
+		iteration[0]++;
+		if(iteration[0] > 30)
+			return 1;
+	}
+	else {
+		different++;
+		if(different >20) {different = 0;iteration[0] = 0;}
+
+	}
+	return 0;
+}
+
+
+int Traitement_Station(event e) {
 
 	//printf("Traitement\n");
+	int arret = 0;
 	for(int i = 0; i < K; i++) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
@@ -264,6 +285,9 @@ void Traitement_Station(event e) {
 			
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
+				if(i == 1) { ancien[0] = nouveau[0]; nouveau[0] = Ta[1];arret =Condition_Arret(0,0); }
+				else if(i == 10) {ancien[1] = nouveau[1]; nouveau[1] = Ta[10];}
+
 				Ta[i] = 0;
 				Nc++;
 				N[i]--;
@@ -297,7 +321,11 @@ void Traitement_Station(event e) {
 	e1.type = 1;
 	e1.etat = 0;
 	Ajouter_Evenement(e1);
+	return arret;
 }
+
+
+
 
 void Decalage_Anneau(event e) {
 
@@ -358,14 +386,6 @@ event Extraire(){
 	return min;
 }
 
-int Condition_Arret(long double Old, long double New){
-	if(fabs(Old-New) < EPSILON && temps > 1000){
-		compteur++;
-		if(compteur > 1e3)
-			return 1;
-		}
-		return 0;
-}
 
 void Initialisation(int i) {
 
@@ -402,8 +422,8 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 
 	Initialisation(i);
 	event e;
-
-	while(temps < MAXTEMPS){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	int arret =0;
+	while(arret == 0){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
 		cumule += (e.n - temps) * Nc;
 		OldNmoyen = Nmoyen;
@@ -428,7 +448,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 		if(e.type == 0){
 			Arrive_Conteneur(e);printf("Arrive\n");}
 		else if(e.type == 1){
-			Traitement_Station(e);printf("Traitement\n");}
+			arret = Traitement_Station(e);printf("Traitement\n");}
 		else{
 			Decalage_Anneau(e);printf("Decalage\n");}
 
@@ -449,6 +469,9 @@ int main(void) {
 	N = calloc(K, sizeof(int));
 	cpt = calloc(K, sizeof(int));
 	Ta = calloc(K, sizeof(int));
+	iteration = calloc(2, sizeof(int));
+	nouveau = calloc(2, sizeof(int));
+	ancien = calloc(2, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	FILE * F1  = fopen("STATION1.data","w");
 	FILE * F10 = fopen("STATION10.data","w");
