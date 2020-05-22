@@ -12,15 +12,17 @@
 #define Lambda 9
 #define Mu 10
 
-#define EPSILON 1e-5
+#define EPSILON 10
 #define MAXEVENT 1000000
 #define MAXTEMPS 100000
 
+int Haut = EPSILON;
+int Bas = -EPSILON;
 double temps = 0;
 //long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 20;
+int K = 22;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -256,22 +258,25 @@ void Decaler_Anneau() {
 }
 
 int Condition_Arret(long double Old, long double New){
-	if(fabs(ancien[0]-nouveau[0]) < 10 && temps > 1000 && different <= 10){
+	if(fabs(ancien[0]-nouveau[0]) < 15 && temps > 1000 && different <= 10){
 		printf("ancien:%d, nouveau:%d\n",ancien[0],nouveau[0]);
 		iteration[0]++;
-		if(iteration[0] > 30)
+		if(iteration[0] > 100)
 			return 1;
 	}
 	else {
 		different++;
-		if(different >20) {different = 0;iteration[0] = 0;}
+		if(different > 10) {
+			different = 0;
+			iteration[0] = 0;
+		}
 
 	}
 	return 0;
 }
 
 
-int Traitement_Station(event e) {
+int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 
 	//printf("Traitement\n");
 	int arret = 0;
@@ -285,8 +290,17 @@ int Traitement_Station(event e) {
 			
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
-				if(i == 1) { ancien[0] = nouveau[0]; nouveau[0] = Ta[1];arret =Condition_Arret(0,0); }
-				else if(i == 10) {ancien[1] = nouveau[1]; nouveau[1] = Ta[10];}
+				if(i == 1) { 
+					ancien[0] = nouveau[0]; 
+					nouveau[0] = Ta[1];
+					fprintf(F1,"%d  %f \n", Ta[1], temps); 
+					arret =Condition_Arret(0,0); 
+				}
+				else if(i == 10) {
+					ancien[1] = nouveau[1]; 
+					nouveau[1] = Ta[10];
+					fprintf(F10,"%d  %f \n", Ta[1], temps); 
+					}
 
 				Ta[i] = 0;
 				Nc++;
@@ -438,8 +452,8 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 			fprintf(f1, "%f  %d \n", temps, Nc);
 			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
-		fprintf(F1,"%d  %f \n", Ta[1], temps); 
-		fprintf(F10,"%d  %f \n", Ta[10], temps); 
+		//fprintf(F1,"%d  %f \n", Ta[1], temps); 
+		//fprintf(F10,"%d  %f \n", Ta[10], temps); 
 
 		//ajouter_point(F1, Ta[1]);
 		//ajouter_point(F10, Ta[10]);//Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
@@ -448,7 +462,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 		if(e.type == 0){
 			Arrive_Conteneur(e);printf("Arrive\n");}
 		else if(e.type == 1){
-			arret = Traitement_Station(e);printf("Traitement\n");}
+			arret = Traitement_Station(e, F1, F10);printf("Traitement\n");}
 		else{
 			Decalage_Anneau(e);printf("Decalage\n");}
 
