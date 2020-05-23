@@ -6,8 +6,7 @@
 #include <math.h>
 
 
-#include "gmp.h"
-#include <mpfr.h>
+#include "file.h"
 
 #define Lambda 9
 #define Mu 10
@@ -20,11 +19,11 @@ int Haut1 = EPSILON;
 int Bas1 = -EPSILON;
 int Haut2 = EPSILON;
 int Bas2 = -EPSILON;
-double temps = 0;
+int temps = 0;
 //long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 100;
+int K = 20;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -34,11 +33,12 @@ int * Ta;
 int *ancien;//tableau enregistrant les temps d'attente ancien et nouveau
 int *nouveau;
 int *iteration;//compteur pour indiquer le nombre de valeurs de suite vérifiant la condtion d'arrêt
-int different =0;//nombre de valeurs ne respectant pas les conditions
+file * file1;
+file * file10;
 
 typedef struct Event{
 	int type; // 0 pour arrivée_client, 1 pour Traitement_Station, 2 pour décalage_anneau
-	double n;
+	int n;
 	int etat; //0 pour non traité et 1 pour traité
 }event;
 
@@ -236,6 +236,8 @@ void Arrive_Conteneur(event e){
 	}
 	//printf("FIle = %d\n",N[1]); 
 
+	ajoutFile(file1, temps);
+	ajoutFile(file10, temps);
 	e.etat = 1;
 	event e1;
 	e1.n = temps + Generer_duree();
@@ -305,6 +307,8 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 
 	//printf("Traitement\n");
 	int arret = 0;
+	int ta1;
+	int ta10;
 	for(int i = 0; i < K; i++) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
@@ -316,17 +320,13 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
 				if(i == 1) { 
-					ancien[0] = nouveau[0]; 
-					nouveau[0] = Ta[1];
-					fprintf(F1,"%d  %f \n", Ta[1], temps); 
-					Condition_Arret();
+					ta1 = defiler(file1);
+					fprintf(F1,"%d  %d \n",(int) temps - ta1, temps);
 				}
 				if(i == 10) {
-					ancien[1] = nouveau[1]; 
-					nouveau[1] = Ta[10];
-					fprintf(F10,"%d  %f \n", Ta[10], temps); 
-					Condition_Arret();
-					}
+					ta10 = defiler(file10);
+					fprintf(F10,"%d  %d \n",(int) temps - ta10, temps);
+				}
 
 				Ta[i] = 0;
 				Nc++;
@@ -386,15 +386,15 @@ void Decalage_Anneau(event e) {
 void affiche_echeancier(){
 	event e;
 
-	printf("--> temps %f et N = %d taille : %d [",temps,Nc,Ech.taille);
+	printf("--> temps %d et N = %d taille : %d [",temps,Nc,Ech.taille);
 	for (int i = 0; i < Ech.taille; i++)
 	{
 		e = Ech.Tab[i];
 
 		if(e.type == 0)
-			printf(" (AC, %lf, %d),",e.n,e.etat);
+			printf(" (AC, %d, %d),",e.n,e.etat);
 		if(e.type == 1)
-			printf(" (FS, %lf, %d),",e.n,e.etat);
+			printf(" (FS, %d, %d),",e.n,e.etat);
 	}
 	printf("] \n \n ");
 }
@@ -450,10 +450,14 @@ void Initialisation(int i) {
 	e3.type = 2;
 	e3.etat = 0;
 	Ajouter_Evenement(e3);
+
+	file1 = creerFile();
+	file10 = creerFile();
+
 }
 
 void ajouter_point(FILE * F1,int Ta){
-	fprintf(F1,"%d  %f \n", Ta, temps); 
+	fprintf(F1,"%d  %d \n", Ta, temps);
 }
 
 void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
@@ -462,7 +466,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 	Initialisation(i);
 	event e;
 	int arret =0;
-	while(iteration[0] < 3000 && iteration[1] < 3000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while(temps < 1000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
 		OldNmoyen = Nmoyen;
 
@@ -472,8 +476,8 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 			fprintf(f1, " 0   0\n");
 		}else {
 			Nmoyen = cumule/temps;
-			printf("temps = %f  N = %d \n", temps, Nc);
-			fprintf(f1, "%f  %d \n", temps, Nc);
+			printf("temps = %d  N = %d \n", temps, Nc);
+			fprintf(f1, "%d  %d \n", temps, Nc);
 			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
 		//fprintf(F1,"%d  %f \n", Ta[1], temps); 
@@ -529,8 +533,28 @@ int main(void) {
 	free(N);
 	free(cpt);
 	free(Ta);
+	free(nouveau);
+	free(ancien);
+	free(iteration);
+	effacerFile(file1);
+	effacerFile(file10);
 
 	printf("haut:%d, bas:%d",Haut1,Bas1);
+/*
+	file* test = creerFile();
+	int k;
+	for(int i = 0; i < 10; i++) {
+		ajoutFile(test, i);
+
+	}
+
+	for(int i = 0; i < 10; i++) {
+		k = defiler(test);
+		printf("%d\n", k);
+
+	}
+
+	effacerFile(test);*/
 /*	
 	for (i = 0; i < 150; i++)
 	{
