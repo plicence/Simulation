@@ -15,15 +15,15 @@
 #define MAXEVENT 1000000
 #define MAXTEMPS 100000
 
-int Haut1 = EPSILON;
-int Bas1 = -EPSILON;
-int Haut2 = EPSILON;
-int Bas2 = -EPSILON;
+int Haut1 = 15;
+int Bas1 = 0;
+int Haut2 = 15;
+int Bas2 = 0;
 int temps = 0;
 //long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 20;
+int K = 100;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -261,13 +261,13 @@ void Decaler_Anneau() {
 
 }
 
-void Condition_Arret(){
+void Condition_Arret(int R){
 	int res;
 	printf("acien:%d, nouveau:%d",ancien[0],nouveau[0]);
-	if((nouveau[0] -ancien[0]) < Bas1 || (nouveau[0] -ancien[0]) > Haut1 ){
+	if(R < Bas1 || R > Haut1 ){
 
-		Bas1 = -fabs(nouveau[0] -ancien[0]) - (EPSILON/2);
-		Haut1 = fabs((nouveau[0] -ancien[0])) + (EPSILON/2);
+		Bas1 = R - (EPSILON/2);
+		Haut1 = R + (EPSILON/2);
 		iteration[0] = 0;
 		printf("haut:%d, bas:%d",Haut1,Bas1);
 
@@ -281,12 +281,11 @@ void Condition_Arret(){
 
 	}
 
-	if((nouveau[1] -ancien[1]) < Bas2 || (nouveau[1] -ancien[1]) > Haut2 ){
+	if(R < Bas2 || R > Haut2 ){
 
-			Bas2 = -fabs(nouveau[1] -ancien[1]) - (EPSILON/2);
-			Haut2 = fabs((nouveau[1] -ancien[1])) + (EPSILON/2);
+			Bas2 = R - (EPSILON/2);
+			Haut2 = R + (EPSILON/2);
 			iteration[1] = 0;
-			printf("haut:%d, bas:%d",Haut2,Bas2);
 
 	}
 
@@ -309,6 +308,8 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 	int arret = 0;
 	int ta1;
 	int ta10;
+	int attente1;
+	int attente10;
 	for(int i = 0; i < K; i++) {
 
 		if (anneau[150/K * i] == 150/K*i) { // Verifie si on est a la station de depart du conteneur
@@ -320,12 +321,17 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 			if (delta[i] == 0 && anneau[150/K *i] == -1) {
 				anneau[150/K * i] = ((150/K) * i);
 				if(i == 1) { 
+
 					ta1 = defiler(file1);
-					fprintf(F1,"%d  %d \n",(int) temps - ta1, temps);
+					attente1 = temps -ta1;
+					fprintf(F1,"%d  %d \n", attente1, temps);
+					Condition_Arret(attente1);
 				}
 				if(i == 10) {
 					ta10 = defiler(file10);
-					fprintf(F10,"%d  %d \n",(int) temps - ta10, temps);
+					attente10 = temps-ta10;
+					fprintf(F10,"%d  %d \n",attente10, temps);
+					Condition_Arret(attente10);
 				}
 
 				Ta[i] = 0;
@@ -466,7 +472,7 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 	Initialisation(i);
 	event e;
 	int arret =0;
-	while(temps < 1000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while( iteration[0] < 100 && iteration[1] < 100 && temps < 10000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
 		e = Extraire();
 		OldNmoyen = Nmoyen;
 
