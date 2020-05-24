@@ -38,7 +38,7 @@ typedef struct Echeancier
 
 echeancier Ech;
 
-long double * Lecture_Fichier(){
+long double * Lecture_Fichier() { //Lit le fichier d'interarrivées et renvoit le tableau associé
 	FILE * f = fopen("Interarrivees.txt","r");
 	long double * file = calloc(109 , sizeof(long double));
 	if( f!= NULL){
@@ -54,7 +54,7 @@ long double * Lecture_Fichier(){
 	else return NULL;
 }
 
-long double * Fct_Repart() {
+long double * Fct_Repart() {//renvoit la probabilité suivant la distribution du fichier
 
 	long double * proba = calloc(109, sizeof(long double));
 	long double * probaFichier = Lecture_Fichier();
@@ -67,7 +67,7 @@ long double * Fct_Repart() {
 	return proba;
 }
 
-long double Generer_duree() {
+long double Generer_duree() {//Retourne une durée par rapport à la fonction de répartition
 	
 	int i = 0;
 	long double nbr_alea = 0;
@@ -84,7 +84,7 @@ long double Generer_duree() {
 	return i-1;
 }
 
-void Ajouter_Evenement(event e){
+void Ajouter_Evenement(event e) {//Ajoute un événement de l'échéancier
 	if(Ech.taille < MAXEVENT){
 		
 		Ech.Tab[Ech.taille] = e;
@@ -98,7 +98,7 @@ void Ajouter_Evenement(event e){
 }
 
 
-void Arrive_Conteneur(event e, int K){
+void Arrive_Conteneur(event e, int K) {// Evenement d'arrivée de conteneurs
 
 	printf("J'execute AC ! \n");
 	for(int i = 0; i < K; i++){
@@ -114,7 +114,7 @@ void Arrive_Conteneur(event e, int K){
 	Ajouter_Evenement(e1);
 }
 
-void Decaler_Anneau() {
+void Decale_Anneau() { //fonction qui fait décaler tous les éléments de la courbe
 
 	int precedent = anneau[149];
 	int courant = 0;
@@ -127,7 +127,7 @@ void Decaler_Anneau() {
 
 }
 
-void Condition_Arret(int R){
+void Condition_Arret(int R) { //Vérifie si les stations sont stables
 	
 	int res;
 	if(R < Bas1 || R > Haut1 ){
@@ -153,7 +153,7 @@ void Condition_Arret(int R){
 }
 
 
-int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
+int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) { //Evenement du traitement de station
 
 	int arret = 0;
 	int ta1;
@@ -168,7 +168,7 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 		}
 		if(N[i] > 0) {
 			
-			if (delta[i] == 0 && anneau[150/K *i] == -1) {
+			if (delta[i] == 0 && anneau[150/K *i] == -1) { //vérifie si on peut ajouter un élément
 				anneau[150/K * i] = ((150/K) * i);
 				if(i == 1) { 
 
@@ -208,9 +208,9 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 	return arret;
 }
 
-void Decalage_Anneau(event e) {
+void Decalage_Anneau(event e) { //Evenement de décalage de l'anneau
 
-	Decaler_Anneau();
+	Decale_Anneau();
 	e.etat = 1;
 	event e1;
 	e1.n = temps + 1;
@@ -221,23 +221,8 @@ void Decalage_Anneau(event e) {
 
 }
 
-void affiche_echeancier(){
-	event e;
 
-	printf("--> temps %d et N = %d taille : %d [",temps,Nc,Ech.taille);
-	for (int i = 0; i < Ech.taille; i++)
-	{
-		e = Ech.Tab[i];
-
-		if(e.type == 0)
-			printf(" (AC, %d, %d),",e.n,e.etat);
-		if(e.type == 1)
-			printf(" (FS, %d, %d),",e.n,e.etat);
-	}
-	printf("] \n \n ");
-}
-
-event Extraire(){
+event Extraire() { //Récupère l'événement
 	int i, imin;
 	event min;
 
@@ -264,7 +249,7 @@ event Extraire(){
 	return min;
 }
 
-void Initialisation(int i) {
+void Init_Anneau(int i) {//Initialise la simulation
 
 	for(int j = 0; j < 150; j++) {
 		anneau[j] = -1;
@@ -292,9 +277,9 @@ void Initialisation(int i) {
 	file10 = creerFile();
 }
 
-void Simulation(FILE* f1,FILE* F1,FILE* F10, int i, int K){
+void Simulateur(FILE* f1,FILE* F1,FILE* F10, int i, int K) {// Effectue la simulation
 	
-	Initialisation(i);
+	Init_Anneau(i);
 	event e;
 	int arret =0;
 	while( iteration[0] < 100 && iteration[1] < 100 && temps < MAXTEMPS){
@@ -309,11 +294,11 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i, int K){
 		}
 
 		if(e.type == 0){
-			Arrive_Conteneur(e, K);printf("Arrive\n");}
+			Arrive_Conteneur(e, K);}
 		else if(e.type == 1){
-			Traitement_Station(e, F1, F10, K);printf("Traitement\n");}
+			Traitement_Station(e, F1, F10, K);}
 		else{
-			Decalage_Anneau(e);printf("Decalage\n");}
+			Decalage_Anneau(e);}
 	}
 }
 
@@ -326,19 +311,15 @@ int main(int argc, char *argv[]) {
 	int i = 150;
 	anneau = malloc(i * sizeof(int));
 	
-	delta =calloc(K, sizeof(int)); //malloc(i * sizeof(int));
+	delta =calloc(K, sizeof(int));
 	N = calloc(K, sizeof(int));
 	cpt = calloc(K, sizeof(int));
 	iteration = calloc(2, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	FILE * F1  = fopen("STATION1.data","w");
 	FILE * F10 = fopen("STATION10.data","w");
-	Simulation(f1, F1, F10, i , K);
-	for (i = 0; i < K; i++)
-	{
-		printf("delta[%d] = %d ", i, delta[i]);
-		printf("N[%d] = %d\n", i, N[i]);
-	}
+	Simulateur(f1, F1, F10, i , K);
+
 	fclose(f1);
 	fclose(F1);
 	fclose(F10);
