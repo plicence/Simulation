@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
-
-
 #include "file.h"
 
 #define Lambda 9
@@ -20,10 +18,8 @@ int Bas1 = 0;
 int Haut2 = 15;
 int Bas2 = 0;
 int temps = 0;
-//long int n = 0; //Etats du systeme
 int compteur = 0;
 double cumule = 0;
-int K = 100;
 int Nc = 0;
 int * anneau;
 int * delta;
@@ -50,30 +46,6 @@ typedef struct Echeancier
 
 echeancier Ech;
 
-/*mpf_t * Lecture_Fichier_Grand(){
-	FILE * f = fopen("Interarrivees.txt","r");
-	mpf_t * file = calloc(109, sizeof(mpf_t));
-	for(int i = 0; i < 109; i++){
-		mpf_init(file[i]);
-	}
-	if(f != NULL){
-		int cmp;
-		mpf_t proba; 
-		mpf_init(proba);
-		for(int i = 0; i < 109; i++){
-			gmp_fscanf(f,"%d %.50FE", &cmp, &proba);
-			//gmp_printf("cmp = %d", cmp);
-			//gmp_printf("proba = %Fe\n", proba);
-			mpf_set(file[cmp], proba);
-			//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
-		}
-		mpf_clear(proba);
-		fclose(f);
-		return file;
-	}
-	else return NULL;
-}*/
-
 long double * Lecture_Fichier(){
 	FILE * f = fopen("Interarrivees.txt","r");
 	long double * file = calloc(109 , sizeof(long double));
@@ -91,90 +63,6 @@ long double * Lecture_Fichier(){
 	else return NULL;
 }
 
-/*mpfr_t * Lecture_Fichier_Grandm(){
-	FILE * f = fopen("Interarrivees.txt","r");
-	mpfr_t * file = calloc(109, sizeof(mpfr_t));
-	for(int i = 0; i < 109; i++){
-		mpfr_init2(file[i],100);
-	}
-	if(f != NULL){
-		mpfr_t cmp;
-		mpfr_t proba; 
-		mpfr_init2(cmp,1);
-		mpfr_init2(proba,100000);
-		for(int i = 0; i < 109; i++){
-			mpfr_inp_str(cmp, f, 10,MPFR_RNDD);
-			mpfr_inp_str(proba, f, 10,MPFR_RNDD);
-			mpfr_set(file[i], proba, MPFR_RNDD);
-			//gmp_printf("cmp = %d, proba = %Fe\n", cmp, file[cmp]);
-			mpfr_out_str(stdout, 10,0,file[i], MPFR_RNDD);
-			printf("\n");
-		}
-		mpfr_clear(proba);
-		fclose(f);
-		return file;
-	}
-	else return NULL;
-}
-
-int Fct_Repart_mpfr() {
-
-	mpfr_t * proba = calloc(109, sizeof(mpfr_t));
-	mpfr_t * probaFichier = calloc(109, sizeof(mpfr_t));
-	
-	for(int i = 0; i < 109; i++){
-		mpfr_init2(proba[i],100);
-		mpfr_init2(probaFichier[i],1000);
-	}
-
-	probaFichier = Lecture_Fichier_Grandm();
-	for(int i =0; i < 109; i++){
-		mpfr_out_str(stdout, 10,0,probaFichier[i], MPFR_RNDD);
-		printf("\n");
-	}
-	
-	mpfr_set(proba[0], probaFichier[0], MPFR_RNDD);
-	for(int i = 1; i < 109;i++){
-		printf("%d ", i);
-		mpfr_add(proba[i], proba[i-1], probaFichier[i], MPFR_RNDD);
-		mpfr_out_str(stdout, 10,0,proba[i], MPFR_RNDD);
-		printf("\n----------------------------------------\n");
-	}
-	
-	mpfr_clear(*proba);
-	mpfr_clear(*probaFichier);
-	mpfr_free_cache();
-	return 0;
-}
-
-int Fct_Repart_mpz() {
-
-	mpf_t * proba = calloc(109, sizeof(mpf_t));
-	mpf_t * probaFichier = calloc(109, sizeof(mpf_t));
-	
-	for(int i = 0; i < 109; i++){
-		mpf_init(proba[i]);
-		mpf_init(probaFichier[i]);
-	}
-
-	probaFichier = Lecture_Fichier_Grand();
-	for(int i =0; i < 109; i++)
-		gmp_printf("probafile[%d] = %FE\n",i,probaFichier[i]);
-	
-	mpf_set(proba[0], probaFichier[0]);
-	for(int i = 1; i < 109;i++){
-		
-		mpf_add(proba[i], proba[i-1], probaFichier[i]);
-		gmp_printf("proba[%d] = %.50FE, probafile[%d] = %.50FE\n", i-1,proba[i-1],i,probaFichier[i]);	
-		gmp_printf("proba[%d] = %.50FE\n", i,proba[i]);
-		printf("----------------------------------------\n");
-	}
-	
-	mpf_clear(*proba);
-	mpf_clear(*probaFichier);
-	return 0;
-}
-*/
 long double * Fct_Repart() {
 
 	long double * proba = calloc(109, sizeof(long double));
@@ -217,25 +105,25 @@ long double Generer_duree() {
 
 void Ajouter_Evenement(event e){
 	if(Ech.taille < MAXEVENT){
+		
 		Ech.Tab[Ech.taille] = e;
 		Ech.taille++;
 		printf("Taille = %d \n",Ech.taille);
 	} else {
+		
 		printf("Echeancier plein ! \n");
 		exit(0);
 	}
 }
 
 
-void Arrive_Conteneur(event e){
+void Arrive_Conteneur(event e, int K){
 
 	printf("J'execute AC ! \n");
-
 	for(int i = 0; i < K; i++){
 		N[i] ++;
 	}
 	//printf("FIle = %d\n",N[1]); 
-
 	ajoutFile(file1, temps);
 	ajoutFile(file10, temps);
 	e.etat = 1;
@@ -244,8 +132,6 @@ void Arrive_Conteneur(event e){
 	e1.type = 0;
 	e1.etat = 0;
 	Ajouter_Evenement(e1);
-
-
 }
 
 void Decaler_Anneau() {
@@ -262,6 +148,7 @@ void Decaler_Anneau() {
 }
 
 void Condition_Arret(int R){
+	
 	int res;
 	printf("acien:%d, nouveau:%d",ancien[0],nouveau[0]);
 	if(R < Bas1 || R > Haut1 ){
@@ -270,39 +157,25 @@ void Condition_Arret(int R){
 		Haut1 = R + (EPSILON/2);
 		iteration[0] = 0;
 		printf("haut:%d, bas:%d",Haut1,Bas1);
-
 	}
-
 	else {
 
 		iteration[0]++;
-
-
-
 	}
-
 	if(R < Bas2 || R > Haut2 ){
 
 			Bas2 = R - (EPSILON/2);
 			Haut2 = R + (EPSILON/2);
 			iteration[1] = 0;
-
 	}
-
 	else {
 
 		iteration[1]++;
-
-
-
 	}
-
-
-
 }
 
 
-int Traitement_Station(event e,  FILE* F1,FILE* F10) {
+int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 
 	//printf("Traitement\n");
 	int arret = 0;
@@ -360,7 +233,6 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 		printf("anneau[%d] = %d ", i, anneau[i]);
 	}
 	printf("-----------------------------------------\n");*/
-
 	e.etat = 1;
 	event e1;
 	e1.n = temps + 1;
@@ -369,9 +241,6 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10) {
 	Ajouter_Evenement(e1);
 	return arret;
 }
-
-
-
 
 void Decalage_Anneau(event e) {
 
@@ -386,8 +255,6 @@ void Decalage_Anneau(event e) {
 	temps++;
 
 }
-
-
 
 void affiche_echeancier(){
 	event e;
@@ -432,7 +299,6 @@ event Extraire(){
 	return min;
 }
 
-
 void Initialisation(int i) {
 
 	for(int j = 0; j < 150; j++) {
@@ -459,23 +325,19 @@ void Initialisation(int i) {
 
 	file1 = creerFile();
 	file10 = creerFile();
-
 }
 
-void ajouter_point(FILE * F1,int Ta){
-	fprintf(F1,"%d  %d \n", Ta, temps);
-}
-
-void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
+void Simulation(FILE* f1,FILE* F1,FILE* F10, int i, int K){
+	
 	long double OldNmoyen;
 	long double Nmoyen;
 	Initialisation(i);
 	event e;
 	int arret =0;
 	while( iteration[0] < 100 && iteration[1] < 100 && temps < 10000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+		
 		e = Extraire();
 		OldNmoyen = Nmoyen;
-
 		if (temps == 0)
 		{
 			//printf("temps = 0 et N = 0 et Nmoyen = 0\n");
@@ -486,29 +348,21 @@ void Simulation(FILE* f1,FILE* F1,FILE* F10, int i){
 			fprintf(f1, "%d  %d \n", temps, Nc);
 			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
-		//fprintf(F1,"%d  %f \n", Ta[1], temps); 
-		//fprintf(F10,"%d  %f \n", Ta[10], temps); 
-
-		//ajouter_point(F1, Ta[1]);
-		//ajouter_point(F10, Ta[10]);//Sauvegarde le temps d’attente afin de pouvoir tracer une courbe
-	
 
 		if(e.type == 0){
-			Arrive_Conteneur(e);printf("Arrive\n");}
+			Arrive_Conteneur(e, K);printf("Arrive\n");}
 		else if(e.type == 1){
-			Traitement_Station(e, F1, F10);printf("Traitement\n");}
+			Traitement_Station(e, F1, F10, K);printf("Traitement\n");}
 		else{
 			Decalage_Anneau(e);printf("Decalage\n");}
-
 	}
-
 }
 
+int main(int argc, char *argv[]) {
 
-
-int main(void) {
-
-
+	int K = atoi(argv[1]);
+	printf("%d",K);
+		
     srand(time(NULL) + getpid());
 	int i = 150;
 	anneau = malloc(i * sizeof(int));
@@ -523,7 +377,7 @@ int main(void) {
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	FILE * F1  = fopen("STATION1.data","w");
 	FILE * F10 = fopen("STATION10.data","w");
-	Simulation(f1, F1, F10, i);
+	Simulation(f1, F1, F10, i , K);
 	//printf("Ech.taille = %d\n", Ech.taille);
 	for (i = 0; i < K; i++)
 	{
