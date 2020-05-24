@@ -6,28 +6,20 @@
 #include <math.h>
 #include "file.h"
 
-#define Lambda 9
-#define Mu 10
-
 #define EPSILON 10
 #define MAXEVENT 1000000
-#define MAXTEMPS 100000
+#define MAXTEMPS 50000
 
 int Haut1 = 15;
 int Bas1 = 0;
 int Haut2 = 15;
 int Bas2 = 0;
 int temps = 0;
-int compteur = 0;
-double cumule = 0;
 int Nc = 0;
 int * anneau;
 int * delta;
 int * N;
 int * cpt;
-int * Ta;
-int *ancien;//tableau enregistrant les temps d'attente ancien et nouveau
-int *nouveau;
 int *iteration;//compteur pour indiquer le nombre de valeurs de suite vérifiant la condtion d'arrêt
 file * file1;
 file * file10;
@@ -55,7 +47,6 @@ long double * Lecture_Fichier(){
 		for(int i = 0; i < 109; i++){
 			fscanf(f,"%d %Le", &cmp, &proba);
 			file[cmp] = proba;
-			//printf("cmp = %d, proba = %Le\n", cmp, proba);
 		}
 		fclose(f);
 		return file;
@@ -71,9 +62,6 @@ long double * Fct_Repart() {
 	proba[0] = probaFichier[0];
 	for(int i = 1; i <= 108;i++){
 		proba[i] = proba[i-1] + probaFichier[i];
-		/*printf("proba[%d] = %.50Le, probafile[%d] = %.50Le\n", i-1,proba[i-1],i,probaFichier[i]);	
-		printf("proba[%d] = %.50Le\n", i,proba[i]);
-		printf("----------------------------------------\n");*/
 	}
 	free(probaFichier);
 	return proba;
@@ -84,20 +72,13 @@ long double Generer_duree() {
 	int i = 0;
 	long double nbr_alea = 0;
 	nbr_alea = (long double)rand() / (long double)RAND_MAX;
-	//printf("nbr_alea = %Le\n", nbr_alea);
 	long double * proba;
 	
 	proba = Fct_Repart(); 
-	/*for(int i = 1; i <= 108;i++){
-		printf("proba[%d] = %.50Le\n", i,proba[i]);
-		printf("----------------------------------------\n");
-	}*/
 	
 	while(proba[i] < nbr_alea){
-		//printf("proba[%d] = %.Le < %Le\n", i,proba[i], nbr_alea);
 		i++;
 	}
-	//printf("proba[%d] = %.Le\n", i-1,proba[i-1]);
 	
 	free(proba);
 	return i-1;
@@ -123,7 +104,6 @@ void Arrive_Conteneur(event e, int K){
 	for(int i = 0; i < K; i++){
 		N[i] ++;
 	}
-	//printf("FIle = %d\n",N[1]); 
 	ajoutFile(file1, temps);
 	ajoutFile(file10, temps);
 	e.etat = 1;
@@ -150,13 +130,11 @@ void Decaler_Anneau() {
 void Condition_Arret(int R){
 	
 	int res;
-	printf("acien:%d, nouveau:%d",ancien[0],nouveau[0]);
 	if(R < Bas1 || R > Haut1 ){
 
 		Bas1 = R - (EPSILON/2);
 		Haut1 = R + (EPSILON/2);
 		iteration[0] = 0;
-		printf("haut:%d, bas:%d",Haut1,Bas1);
 	}
 	else {
 
@@ -177,7 +155,6 @@ void Condition_Arret(int R){
 
 int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 
-	//printf("Traitement\n");
 	int arret = 0;
 	int ta1;
 	int ta10;
@@ -207,7 +184,6 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 					Condition_Arret(attente10);
 				}
 
-				Ta[i] = 0;
 				Nc++;
 				N[i]--;
 				delta[i] = 10;
@@ -215,24 +191,14 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 			else {
 				if(delta[i] > 0)
 					delta[i] --;
-				Ta[i] ++;
 
 				if (anneau[150/K * i] >= 0) {
 					cpt[i]++ ;
 				}
 			}
 		}
-		else {
-
-			Ta[i]++;
-		}
 
 	}
-	/*for (int i = 0; i < 150; i++)
-	{
-		printf("anneau[%d] = %d ", i, anneau[i]);
-	}
-	printf("-----------------------------------------\n");*/
 	e.etat = 1;
 	event e1;
 	e1.n = temps + 1;
@@ -244,7 +210,6 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) {
 
 void Decalage_Anneau(event e) {
 
-	//printf("Rotation\n");
 	Decaler_Anneau();
 	e.etat = 1;
 	event e1;
@@ -329,24 +294,18 @@ void Initialisation(int i) {
 
 void Simulation(FILE* f1,FILE* F1,FILE* F10, int i, int K){
 	
-	long double OldNmoyen;
-	long double Nmoyen;
 	Initialisation(i);
 	event e;
 	int arret =0;
-	while( iteration[0] < 100 && iteration[1] < 100 && temps < 10000){ //(Condition_Arret(OldNmoyen, Nmoyen) == 0)
+	while( iteration[0] < 100 && iteration[1] < 100 && temps < MAXTEMPS){
 		
 		e = Extraire();
-		OldNmoyen = Nmoyen;
 		if (temps == 0)
 		{
-			//printf("temps = 0 et N = 0 et Nmoyen = 0\n");
 			fprintf(f1, " 0   0\n");
 		}else {
-			Nmoyen = cumule/temps;
 			printf("temps = %d  N = %d \n", temps, Nc);
 			fprintf(f1, "%d  %d \n", temps, Nc);
-			//fprintf(f1, "%f   %Lf\n", temps, Nmoyen);
 		}
 
 		if(e.type == 0){
@@ -370,15 +329,11 @@ int main(int argc, char *argv[]) {
 	delta =calloc(K, sizeof(int)); //malloc(i * sizeof(int));
 	N = calloc(K, sizeof(int));
 	cpt = calloc(K, sizeof(int));
-	Ta = calloc(K, sizeof(int));
 	iteration = calloc(2, sizeof(int));
-	nouveau = calloc(2, sizeof(int));
-	ancien = calloc(2, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	FILE * F1  = fopen("STATION1.data","w");
 	FILE * F10 = fopen("STATION10.data","w");
 	Simulation(f1, F1, F10, i , K);
-	//printf("Ech.taille = %d\n", Ech.taille);
 	for (i = 0; i < K; i++)
 	{
 		printf("delta[%d] = %d ", i, delta[i]);
@@ -392,40 +347,11 @@ int main(int argc, char *argv[]) {
 	free(delta);
 	free(N);
 	free(cpt);
-	free(Ta);
-	free(nouveau);
-	free(ancien);
 	free(iteration);
 	effacerFile(file1);
 	effacerFile(file10);
 
 	printf("haut:%d, bas:%d",Haut1,Bas1);
-/*
-	file* test = creerFile();
-	int k;
-	for(int i = 0; i < 10; i++) {
-		ajoutFile(test, i);
 
-	}
-
-	for(int i = 0; i < 10; i++) {
-		k = defiler(test);
-		printf("%d\n", k);
-
-	}
-
-	effacerFile(test);*/
-/*	
-	for (i = 0; i < 150; i++)
-	{
-		anneau[i] = i;
-		printf("anneau[%d] = %d\n", i, anneau[i]);
-	}
-	Decaler_Anneau();
-	for (i = 0; i < 150; i++){
-		printf("anneau[%d] = %d\n", i, anneau[i]);
-	}
-    
-  */  
 	return EXIT_SUCCESS;
 }
