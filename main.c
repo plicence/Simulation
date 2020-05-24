@@ -289,7 +289,6 @@ void Simulateur(FILE* f1,FILE* F1,FILE* F10, int i, int K) {// Effectue la simul
 		{
 			fprintf(f1, " 0   0\n");
 		}else {
-			printf("temps = %d  N = %d \n", temps, Nc);
 			fprintf(f1, "%d  %d \n", temps, Nc);
 		}
 
