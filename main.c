@@ -170,14 +170,14 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) { //Evenement du tra
 			
 			if (delta[i] == 0 && anneau[150/K *i] == -1) { //vérifie si on peut ajouter un élément
 				anneau[150/K * i] = ((150/K) * i);
-				if(i == 1) { 
+				if(i == 0) { 
 
 					ta1 = defiler(file1);
 					attente1 = temps -ta1;
 					fprintf(F1,"%d  %d \n", attente1, temps);
 					Condition_Arret(attente1);
 				}
-				if(i == 10) {
+				if(i == 9) {
 					ta10 = defiler(file10);
 					attente10 = temps-ta10;
 					fprintf(F10,"%d  %d \n",attente10, temps);
@@ -278,11 +278,11 @@ void Init_Anneau(int i) {//Initialise la simulation
 }
 
 void Simulateur(FILE* f1,FILE* F1,FILE* F10, int i, int K) {// Effectue la simulation
-	
+
 	Init_Anneau(i);
 	event e;
 	int arret =0;
-	while( iteration[0] < 100 && iteration[1] < 100 && temps < MAXTEMPS){
+	while(temps < MAXTEMPS){
 		
 		e = Extraire();
 		if (temps == 0)
@@ -304,7 +304,7 @@ void Simulateur(FILE* f1,FILE* F1,FILE* F10, int i, int K) {// Effectue la simul
 int main(int argc, char *argv[]) {
 
 	int K = atoi(argv[1]);
-	printf("%d",K);
+	printf("K = %d\n",K);
 		
     srand(time(NULL) + getpid());
 	int i = 150;
@@ -331,7 +331,7 @@ int main(int argc, char *argv[]) {
 	effacerFile(file1);
 	effacerFile(file10);
 
-	printf("haut:%d, bas:%d",Haut1,Bas1);
+	printf("haut:%d, bas:%d\n",Haut1,Bas1);
 
 	return EXIT_SUCCESS;
 }

@@ -1,5 +1,4 @@
 
-
 simu: main.o file.o
 		gcc -o simu main.o file.o -lm
 
