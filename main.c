@@ -16,17 +16,16 @@ int Haut2 = 15;
 int Bas2 = 0;
 int temps = 0;
 int Nc = 0;
-int * anneau;
-int * delta;
-int * N;
-int * cpt;
+int * anneau;//structure de l'anneau
+int * delta;//tableau de délais d'attente des stations
+int * N;//tableau des remplissages de stations
 int *iteration;//compteur pour indiquer le nombre de valeurs de suite vérifiant la condtion d'arrêt
-file * file1;
-file * file10;
+file * file1;//file des délais pour la station 1
+file * file10;//file des délais pour la station 10
 
 typedef struct Event{
 	int type; // 0 pour arrivée_client, 1 pour Traitement_Station, 2 pour décalage_anneau
-	int n;
+	int n;//temps d'arrivée
 	int etat; //0 pour non traité et 1 pour traité
 }event;
 
@@ -192,9 +191,6 @@ int Traitement_Station(event e,  FILE* F1,FILE* F10, int K) { //Evenement du tra
 				if(delta[i] > 0)
 					delta[i] --;
 
-				if (anneau[150/K * i] >= 0) {
-					cpt[i]++ ;
-				}
 			}
 		}
 
@@ -249,11 +245,46 @@ event Extraire() { //Récupère l'événement
 	return min;
 }
 
-void Init_Anneau(int i) {//Initialise la simulation
+void Init_Anneau(int i, int K) {//Initialise la simulation
 
+	printf("test");
+	anneau = malloc(i * sizeof(int));
+	if(anneau == NULL) {
+		printf("Memory failure in main.c\n");
+		exit(EXIT_FAILURE);
+
+	}
 	for(int j = 0; j < 150; j++) {
 		anneau[j] = -1;
 	}
+	printf("test2");
+	delta =calloc(K, sizeof(int));
+	if(delta == NULL) {
+		printf("Memory failure in main.c\n");
+		free(anneau);
+		exit(EXIT_FAILURE);
+
+	}
+	printf("test3");
+	N = calloc(K, sizeof(int));
+	if(N == NULL) {
+		printf("Memory failure in main.c\n");
+		free(anneau);
+		free(delta);
+		exit(EXIT_FAILURE);
+
+	}
+	printf("test4");
+	iteration = calloc(2, sizeof(int));
+	if(iteration == NULL) {
+		printf("Memory failure in main.c Init_Anneau\n");
+		free(anneau);
+		free(delta);
+		free(N);
+		exit(EXIT_FAILURE);
+
+	}
+
 	
 	Ech.taille = 0;
 	
@@ -279,10 +310,10 @@ void Init_Anneau(int i) {//Initialise la simulation
 
 void Simulateur(FILE* f1,FILE* F1,FILE* F10, int i, int K) {// Effectue la simulation
 
-	Init_Anneau(i);
+	Init_Anneau(i, K);
 	event e;
 	int arret =0;
-	while(temps < MAXTEMPS){
+	while(iteration[0] < 100 && iteration[1] < 100 && temps < MAXTEMPS){
 		
 		e = Extraire();
 		if (temps == 0)
@@ -308,12 +339,6 @@ int main(int argc, char *argv[]) {
 		
     srand(time(NULL) + getpid());
 	int i = 150;
-	anneau = malloc(i * sizeof(int));
-	
-	delta =calloc(K, sizeof(int));
-	N = calloc(K, sizeof(int));
-	cpt = calloc(K, sizeof(int));
-	iteration = calloc(2, sizeof(int));
 	FILE *f1 = fopen("Simulation_MM2.data","w");
 	FILE * F1  = fopen("STATION1.data","w");
 	FILE * F10 = fopen("STATION10.data","w");
@@ -326,7 +351,6 @@ int main(int argc, char *argv[]) {
 	free(anneau);
 	free(delta);
 	free(N);
-	free(cpt);
 	free(iteration);
 	effacerFile(file1);
 	effacerFile(file10);
