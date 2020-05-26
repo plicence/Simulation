@@ -40,30 +40,41 @@ echeancier Ech;
 long double * Lecture_Fichier() { //Lit le fichier d'interarrivées et renvoit le tableau associé
 	FILE * f = fopen("Interarrivees.txt","r");
 	long double * file = calloc(109 , sizeof(long double));
-	if( f!= NULL){
-		int cmp;
-		long double proba; 
-		for(int i = 0; i < 109; i++){
-			fscanf(f,"%d %Le", &cmp, &proba);
-			file[cmp] = proba;
+	if(file == NULL)
+	{
+		printf("Memory allocation failed");
+		exit(EXIT_FAILURE);
+	} else {
+		if( f!= NULL){
+			int cmp;
+			long double proba; 
+			for(int i = 0; i < 109; i++){
+				fscanf(f,"%d %Le", &cmp, &proba);
+				file[cmp] = proba;
+			}
+			fclose(f);
+			return file;
 		}
-		fclose(f);
-		return file;
+		else return NULL;
 	}
-	else return NULL;
 }
 
 long double * Fct_Repart() {//renvoit la probabilité suivant la distribution du fichier
 
 	long double * proba = calloc(109, sizeof(long double));
 	long double * probaFichier = Lecture_Fichier();
-	
-	proba[0] = probaFichier[0];
-	for(int i = 1; i <= 108;i++){
-		proba[i] = proba[i-1] + probaFichier[i];
+	if(proba == NULL)
+	{
+		printf("Memory allocation failed");
+		exit(EXIT_FAILURE);
+	} else {
+		proba[0] = probaFichier[0];
+		for(int i = 1; i <= 108;i++){
+			proba[i] = proba[i-1] + probaFichier[i];
+		}
+		free(probaFichier);
+		return proba;
 	}
-	free(probaFichier);
-	return proba;
 }
 
 long double Generer_duree() {//Retourne une durée par rapport à la fonction de répartition
